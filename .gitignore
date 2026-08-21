@@ -1,0 +1,3 @@
+backend/client_secret.json
+.env
+backend/__pycache__

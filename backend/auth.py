@@ -23,15 +23,16 @@ app.add_middleware(SessionMiddleware,
 def extract_detail(mail:dict):
     payload=mail["payload"]
     headers=payload.get("headers")
+    date=sub=From=To=None
     for item in headers:
         if item.get("name")=="Date":
             date=item.get("value")
         elif item.get("name")=="From":
             From=item.get("value")
         elif item.get("name")=="To":
-                    To=item.get("value")
-        elif item.get("name")=="subject":
-                    sub=item.get("value")
+            To=item.get("value")
+        elif item.get("name")=="Subject":
+            sub=item.get("value")
     return {"Date":date,"From":From,"To":To,"subject":sub}
 def get_email_body(payload):
     if payload.get("body",{}).get("data"):
@@ -62,7 +63,7 @@ async def open():
 
 @app.get('/login')
 async def login(request:Request):
-    flow=Flow.from_client_secrets_file("client_secret_849252318924-27krrmrskp00mfa6ihgtirprqhd0ba5t.apps.googleusercontent.com.json",scopes=SCOPES)
+    flow=Flow.from_client_secrets_file("client_secret.json",scopes=SCOPES)
     flow.redirect_uri=Redirect_uri
     print("FLOW Created")  
     authorization_url,state=flow.authorization_url(access_type="offline",include_granted_scopes="true",prompt="consent")
@@ -72,14 +73,14 @@ async def login(request:Request):
     return RedirectResponse(authorization_url)
 
 
-@app.get('/auth/callback')
+@app.get('/auth/callback',response_class=HTMLResponse)
 async def callback(request:Request):
     return_state=request.session.get('state')
     saved_state=request.query_params.get("state")
     if return_state!=saved_state:
         return{'message':"INVALID OAUTH REQUEST"}
     code=request.query_params.get("code")
-    flow=Flow.from_client_secrets_file("client_secret_849252318924-27krrmrskp00mfa6ihgtirprqhd0ba5t.apps.googleusercontent.com.json",scopes=SCOPES)
+    flow=Flow.from_client_secrets_file("client_secret.json",scopes=SCOPES)
     flow.redirect_uri=Redirect_uri
     flow.code_verifier=request.session["code_verifier"]
     flow.fetch_token(code=request.query_params.get('code'))
@@ -93,5 +94,7 @@ async def callback(request:Request):
     body=get_email_body(payload)
     details=extract_detail(email)
     details["Body"]=body
-    obj=Prompt(details)
+    obj=Prompt()
+    outp=obj.generate(details)
+    return f'''<div>f{outp}</div>'''
 

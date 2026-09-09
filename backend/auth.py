@@ -1,4 +1,4 @@
-import base64
+3import base64
 from fastapi import FastAPI,Request
 from fastapi.responses import HTMLResponse,RedirectResponse 
 from google_auth_oauthlib.flow import Flow
@@ -14,11 +14,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins)
 app.add_middleware(SessionMiddleware, 
-    secret_key="your-very-secure-random-secret-key",  # Change this in production!
-    session_cookie="fapi_session",                    # Name of the cookie
-    max_age=3600,                                     # Session timeout in seconds (1 hour)
-    same_site="lax",                                  # Protects against CSRF
-    https_only=False                                  # Set to True in production (requires HTTPS)
+    secret_key="your-very-secure-random-secret-key", 
+    session_cookie="fapi_session",                   
+    max_age=3600,                                    
+    same_site="lax",                                 
+    https_only=False                                 
 )
 def extract_detail(mail:dict):
     payload=mail["payload"]

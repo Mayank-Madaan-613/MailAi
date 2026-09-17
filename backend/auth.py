@@ -1,4 +1,4 @@
-3import base64
+import base64
 from fastapi import FastAPI,Request
 from fastapi.responses import HTMLResponse,RedirectResponse 
 from google_auth_oauthlib.flow import Flow
@@ -88,13 +88,16 @@ async def callback(request:Request):
     service=build("gmail",'v1',credentials=credentials)
     messages=service.users().messages().list(q="in:inbox category:primary",userId="me",maxResults=5).execute()
     result=messages.get("messages",[])
-    message_id=result[0]['id']
-    email=service.users().messages().get(userId="me",id=message_id,format="full").execute()
-    payload=email["payload"]
-    body=get_email_body(payload)
-    details=extract_detail(email)
-    details["Body"]=body
-    obj=Prompt()
-    outp=obj.generate(details)
-    return f'''<div>f{outp}</div>'''
+    main=[]
+    for x in result:
+        message_id=result[x]['id']
+        email=service.users().messages().get(userId="me",id=message_id,format="full").execute()
+        payload=email["payload"]
+        body=get_email_body(payload)
+        details=extract_detail(email)
+        details["Body"]=body
+        obj=Prompt()
+        outp=obj.generate(details)
+        main.append(outp)
+    return f'''<div>f{main}</div>'''
 
